@@ -11,7 +11,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=flat-square&logo=tailwind-css)](https://tailwindcss.com)
 [![Zustand](https://img.shields.io/badge/Zustand-state-orange?style=flat-square)](https://zustand-demo.pmnd.rs)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green?style=flat-square)](./LICENSE)
-[![Live Demo](https://img.shields.io/badge/Live-Demo-2b87ff?style=flat-square&logo=vercel)](https://investory.vercel.app)
+[![Live Demo](https://img.shields.io/badge/Live-Demo-2b87ff?style=flat-square&logo=vercel)](https://investory-seven.vercel.app)
 
 <br />
 
@@ -36,15 +36,15 @@ No real money. No sign-up required. Just learn by doing.
 
 ## Table of Contents
 
-- [Why Investory?](#-why-investory)
-- [Features](#-features)
-- [Learning Hub — The Core Differentiator](#-learning-hub--the-core-differentiator)
-- [Screenshots](#-screenshots)
-- [Tech Stack](#-tech-stack)
-- [Getting Started](#-getting-started)
-- [Project Structure](#-project-structure)
-- [Contributing](#-contributing)
-- [License](#-license)
+- [Why Investory?](#why-investory)
+- [Features](#features)
+- [Learning Hub — The Core Differentiator](#learning-hub--the-core-differentiator)
+- [Screenshots](#screenshots)
+- [Tech Stack](#tech-stack)
+- [Getting Started](#getting-started)
+- [Project Structure](#project-structure)
+- [Contributing](#contributing)
+- [License](#license)
 
 ---
 
@@ -150,7 +150,7 @@ Most simulators drop you into a trading interface with zero context. Investory s
 | **Dashboard** — portfolio overview, health score, daily lesson prompt | **Simulator** — live pre-trade insights, price chart, trade history |
 | ![Portfolio](./screenshots/portfolio.png) | ![Insights](./screenshots/insights.png) |
 | **Portfolio** — health score breakdown, sector allocation, holdings P&L | **Insights** — diagnostic cards across Risk, Mistakes, Opportunities, Good Decisions |
-| ![Learning Hub](./screenshots/learn.png) | ![Explain My Action](./screenshots/explain.png) |
+| ![Learning Hub](./screenshots/learn.png)  | ![Explain My Action](./screenshots/explain.png) |
 | **Learning Hub** — 5 courses, progress bars, streak counter | **Explain My Action** — post-trade explanation modal with risk level and tip |
 
 ---
@@ -184,7 +184,7 @@ All data lives in the browser via Zustand + `localStorage`. Stock price history 
 
 ```bash
 # Clone the repo
-git clone https://github.com/YOUR_USERNAME/investory.git
+git clone https://github.com/VS251/investory.git
 cd investory
 
 # Install dependencies
@@ -284,7 +284,7 @@ Contributions are very welcome! Here's how to get involved:
 
 ```bash
 # Fork the repo, then:
-git clone https://github.com/YOUR_USERNAME/investory.git
+git clone https://github.com/VS251/investory.git
 cd investory
 npm install
 npm run dev
@@ -332,7 +332,7 @@ git checkout -b feat/your-feature-name
 
 ## License
 
-MIT © [Varun Salian](https://github.com/YOUR_USERNAME)
+MIT © [Varun Salian](https://github.com/VS251)
 
 Free to use, fork, and build on. If Investory helped you learn something, a ⭐ on GitHub goes a long way.
 
@@ -342,6 +342,6 @@ Free to use, fork, and build on. If Investory helped you learn something, a ⭐ 
 
 **Built with curiosity and a belief that everyone deserves to understand their money.**
 
-[Live Demo](https://investory.vercel.app) · [Report a Bug](https://github.com/YOUR_USERNAME/investory/issues) · [Request a Feature](https://github.com/YOUR_USERNAME/investory/issues)
+[Live Demo](https://investory-seven.vercel.app) · [Report a Bug](https://github.com/VS251/investory/issues) · [Request a Feature](https://github.com/VS251/investory/issues)
 
 </div>
