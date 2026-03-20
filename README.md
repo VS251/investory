@@ -97,9 +97,6 @@ Four categories of personalised insights — not random tips:
 - **SIP Calculator** — project wealth from monthly investments
 - **Compound Interest Calculator** — visualise the power of compounding
 
-### 🌙 Dark / Light Mode
-Full dark mode support, pixel-perfect in both themes.
-
 ---
 
 ## 📚 Learning Hub — The Core Differentiator
