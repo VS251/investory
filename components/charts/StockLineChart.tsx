@@ -9,7 +9,8 @@ import {
   YAxis,
   Tooltip,
 } from 'recharts'
-import { getStock } from '@/lib/data/stocks'
+import { useStocksStore } from '@/store/useStocksStore'
+import { useStockHistory } from '@/hooks/useStockHistory'
 import { formatCurrency } from '@/lib/utils/formatters'
 import type { PricePoint } from '@/types'
 
@@ -28,14 +29,14 @@ const RANGE_DAYS: Record<Range, number> = {
 }
 
 function formatAxisDate(dateStr: string, range: Range): string {
-  const date = new Date(dateStr)
+  const date = new Date(dateStr + 'T00:00:00')
   if (range === '1M') {
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+    return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
   }
   if (range === '3M') {
-    return date.toLocaleDateString('en-IN', { day: '2-digit', month: 'short' })
+    return date.toLocaleDateString('en-US', { day: '2-digit', month: 'short' })
   }
-  return date.toLocaleDateString('en-IN', { month: 'short', year: '2-digit' })
+  return date.toLocaleDateString('en-US', { month: 'short', year: '2-digit' })
 }
 
 interface TooltipPayload {
@@ -46,7 +47,6 @@ interface TooltipPayload {
 interface CustomTooltipProps {
   active?: boolean
   payload?: TooltipPayload[]
-  label?: string
 }
 
 function CustomTooltip({ active, payload }: CustomTooltipProps) {
@@ -63,13 +63,15 @@ function CustomTooltip({ active, payload }: CustomTooltipProps) {
 export function StockLineChart({ symbol, range: initialRange = '1M', height = 200 }: StockLineChartProps) {
   const [range, setRange] = useState<Range>(initialRange)
 
+  // Trigger lazy history load + subscribe for re-render when it arrives
+  const { loaded } = useStockHistory(symbol)
+  const priceHistory = useStocksStore((s) => s.stocks[symbol]?.priceHistory ?? [])
+
   const { data, color } = useMemo(() => {
-    const stock = getStock(symbol)
-    if (!stock || stock.priceHistory.length === 0) return { data: [], color: '#2b87ff' }
+    if (priceHistory.length === 0) return { data: [], color: '#2b87ff' }
 
     const days = RANGE_DAYS[range]
-    const sliced = stock.priceHistory.slice(-days)
-
+    const sliced = priceHistory.slice(-days)
     if (sliced.length === 0) return { data: [], color: '#2b87ff' }
 
     const startPrice = sliced[0].price
@@ -77,37 +79,44 @@ export function StockLineChart({ symbol, range: initialRange = '1M', height = 20
     const chartColor = endPrice >= startPrice ? '#16a34a' : '#dc2626'
 
     return { data: sliced, color: chartColor }
-  }, [symbol, range])
+  }, [priceHistory, range])
 
   const prices = data.map((d) => d.price)
   const minPrice = prices.length > 0 ? Math.min(...prices) : 0
   const maxPrice = prices.length > 0 ? Math.max(...prices) : 0
   const padding = (maxPrice - minPrice) * 0.1 || 10
+  const tickCount = range === '1M' ? 4 : 6
 
-  // Tick interval to avoid crowding
-  const tickCount = range === '1M' ? 4 : range === '3M' ? 6 : 6
-
-  if (data.length === 0) {
+  if (!loaded || data.length === 0) {
     return (
-      <div
-        className="flex items-center justify-center rounded-lg bg-[var(--bg-card-alt)] text-sm text-[var(--text-muted)]"
-        style={{ height }}
-      >
-        No price data available
+      <div>
+        <div className="mb-3 flex gap-1">
+          {(['1M', '3M', '1Y'] as Range[]).map((r) => (
+            <button
+              key={r}
+              onClick={() => setRange(r)}
+              className={`rounded-md px-2.5 py-1 text-xs font-medium transition-colors ${
+                range === r
+                  ? 'bg-brand-500 text-white'
+                  : 'bg-[var(--bg-card-alt)] text-[var(--text-muted)] hover:text-[var(--text-primary)]'
+              }`}
+            >
+              {r}
+            </button>
+          ))}
+        </div>
+        <div
+          className="flex items-center justify-center rounded-lg bg-[var(--bg-card-alt)] text-sm text-[var(--text-muted)]"
+          style={{ height }}
+        >
+          {loaded ? 'No price data available' : 'Loading price history…'}
+        </div>
       </div>
     )
   }
 
-  const tickIndices = new Set<number>()
-  const step = Math.floor(data.length / tickCount)
-  for (let i = 0; i < tickCount; i++) {
-    tickIndices.add(Math.min(i * step, data.length - 1))
-  }
-  tickIndices.add(data.length - 1)
-
   return (
     <div>
-      {/* Range selector */}
       <div className="mb-3 flex gap-1">
         {(['1M', '3M', '1Y'] as Range[]).map((r) => (
           <button
@@ -145,8 +154,8 @@ export function StockLineChart({ symbol, range: initialRange = '1M', height = 20
             tick={{ fontSize: 10, fill: 'var(--text-muted)' }}
             axisLine={false}
             tickLine={false}
-            tickFormatter={(val: number) => `₹${val.toFixed(0)}`}
-            width={58}
+            tickFormatter={(val: number) => `$${val.toFixed(0)}`}
+            width={52}
           />
           <Tooltip content={<CustomTooltip />} />
           <Area

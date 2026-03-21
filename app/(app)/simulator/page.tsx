@@ -20,14 +20,14 @@ export default function SimulatorPage() {
   const guided = searchParams.get('guided') === 'true'
   const lessonParam = searchParams.get('lesson')
 
-  const [selectedSymbol, setSelectedSymbol] = useState('RELIANCE')
+  const [selectedSymbol, setSelectedSymbol] = useState('AAPL')
   const [showExplainModal, setShowExplainModal] = useState(false)
   const [lastTrade, setLastTrade] = useState<Trade | null>(null)
 
-  // If guided, pre-select RELIANCE
+  // If guided, pre-select AAPL
   useEffect(() => {
     if (guided) {
-      setSelectedSymbol('RELIANCE')
+      setSelectedSymbol('AAPL')
     }
   }, [guided])
 
@@ -48,21 +48,20 @@ export default function SimulatorPage() {
   }
 
   const lessonHints: Record<string, string> = {
-    'what-is-a-stock': 'Try buying 1 share of a company you recognise. Notice how the price changes.',
-    'buy-and-hold': 'Practise buying and holding — resist the urge to sell immediately.',
+    'what-is-a-stock': 'Try buying 1 share of a company you recognise. Notice the sector and price data.',
+    'buy-and-hold': 'Practice buying and holding — resist the urge to sell immediately.',
     'diversification': 'Try buying stocks from at least 3 different sectors.',
     'risk-and-return': 'Compare how different sectors perform over 1M vs 1Y ranges.',
   }
   const lessonHint = lessonParam ? lessonHints[lessonParam] : null
 
   return (
-    <PageWrapper title="Simulator" subtitle="Practise trading with virtual ₹1,00,000">
-      {/* Market realism notice */}
+    <PageWrapper title="Simulator" subtitle="Practice trading with virtual $100,000">
+      {/* Market data notice */}
       <div className="mb-4 flex items-start gap-2 rounded-lg border border-brand-200 bg-brand-50 px-3 py-2.5 text-xs text-brand-700 dark:border-brand-800 dark:bg-brand-900/30 dark:text-brand-300">
         <Info size={14} className="mt-0.5 flex-shrink-0" />
         <span>
-          Simulated data for learning purposes. Prices reflect a 1-year training period and are
-          not live market data.
+          Real US market data (EOD prices). For learning purposes only — not financial advice.
         </span>
       </div>
 
@@ -76,9 +75,8 @@ export default function SimulatorPage() {
                 Guided First Trade
               </p>
               <p className="mt-0.5 text-sm text-gain-dark/80 dark:text-gain/80">
-                We've pre-selected Reliance Industries for you. Enter a quantity (e.g. 2), review
-                the pre-trade insight, and click Buy. After the trade you'll see an AI-powered
-                explanation.
+                We've pre-selected Apple Inc. for you. Enter a quantity (e.g. 2), review
+                the pre-trade insight, and click Buy. After the trade you'll see an explanation of what it means.
               </p>
             </div>
           </div>

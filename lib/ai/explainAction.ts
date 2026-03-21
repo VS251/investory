@@ -107,8 +107,8 @@ export function explainTrade(
   } else if (thisSectorPct > 40) {
     escalate('medium')
     warnings.push(`${sector} now accounts for ${thisSectorPct}% of your portfolio`)
-    if (sector === 'IT') {
-      warnings.push('IT stocks move together on macro events (US growth, tech layoffs, visa policies)')
+    if (sector === 'Technology') {
+      warnings.push('Tech stocks move together on macro events (rate changes, earnings seasons, AI sentiment)')
     }
   }
 
@@ -144,14 +144,14 @@ export function explainTrade(
 
   // Generate explanation text
   const action = trade.type === 'buy' ? 'bought' : 'sold'
-  const headline = `You ${action} ${trade.quantity} shares of ${stock?.name ?? trade.symbol} at ₹${trade.price.toFixed(2)}`
+  const headline = `You ${action} ${trade.quantity} shares of ${stock?.name ?? trade.symbol} at $${trade.price.toFixed(2)}`
 
   let explanation: string
   if (trade.type === 'buy') {
-    explanation = `You invested ₹${trade.total.toFixed(0)} in ${stock?.name ?? trade.symbol} (${sector} sector).
+    explanation = `You invested $${trade.total.toFixed(0)} in ${stock?.name ?? trade.symbol} (${sector} sector).
 ${sector} now represents ${thisSectorPct}% of your portfolio. ${riskReason}`
   } else {
-    explanation = `You received ₹${trade.total.toFixed(0)} from selling ${trade.quantity} shares of ${stock?.name ?? trade.symbol}.
+    explanation = `You received $${trade.total.toFixed(0)} from selling ${trade.quantity} shares of ${stock?.name ?? trade.symbol}.
 Your cash balance is now ${cashPct}% of your starting balance.`
   }
 

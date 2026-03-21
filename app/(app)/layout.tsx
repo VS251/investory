@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { Navbar } from '@/components/layout/Navbar'
 import { Sidebar } from '@/components/layout/Sidebar'
 import { BottomNav } from '@/components/layout/BottomNav'
+import { StockDataProvider } from '@/components/providers/StockDataProvider'
 import { useUserStore } from '@/store/useUserStore'
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -20,13 +21,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   if (!hasCompletedOnboarding) return null
 
   return (
-    <div className="flex min-h-screen flex-col bg-[var(--bg-page)]">
-      <Navbar />
-      <div className="flex flex-1">
-        <Sidebar />
-        <div className="flex-1 overflow-auto">{children}</div>
+    <StockDataProvider>
+      <div className="flex min-h-screen flex-col bg-[var(--bg-page)]">
+        <Navbar />
+        <div className="flex flex-1">
+          <Sidebar />
+          <div className="flex-1 overflow-auto">{children}</div>
+        </div>
+        <BottomNav />
       </div>
-      <BottomNav />
-    </div>
+    </StockDataProvider>
   )
 }

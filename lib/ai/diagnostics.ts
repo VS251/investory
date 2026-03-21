@@ -90,7 +90,7 @@ export function generateInsights(input: DiagnosticsInput): Insight[] {
           category: 'mistake',
           severity: 'warning',
           title: `You sold ${sell.symbol} at a significant loss`,
-          body: `You sold ${sell.symbol} at ₹${sell.price.toFixed(0)}, which is ${Math.round(lossPct)}% below your average buy price of ₹${avgBuy.toFixed(0)}. Selling during dips locks in permanent losses.`,
+          body: `You sold ${sell.symbol} at $${sell.price.toFixed(2)}, which is ${Math.round(lossPct)}% below your average buy price of $${avgBuy.toFixed(2)}. Selling during dips locks in permanent losses.`,
         })
       }
     }
@@ -142,7 +142,7 @@ export function generateInsights(input: DiagnosticsInput): Insight[] {
       id: 'M4-idle-cash',
       category: 'mistake',
       severity: 'info',
-      title: `₹${Math.round(cashBalance).toLocaleString('en-IN')} is sitting uninvested`,
+      title: `$${Math.round(cashBalance).toLocaleString('en-US')} is sitting uninvested`,
       body: `Over 70% of your virtual funds haven't been put to work. Even a conservative allocation beats holding all cash — consider deploying gradually across stable sectors.`,
       actionLabel: 'Invest Now',
       actionHref: '/simulator',
@@ -172,17 +172,19 @@ export function generateInsights(input: DiagnosticsInput): Insight[] {
     }
   }
 
-  // O2: Conservative user missing FMCG
+  // O2: Conservative user missing Consumer Staples
   if (riskTolerance === 'conservative' && holdingList.length > 0) {
-    const hasFMCG = Object.keys(holdings).some((sym) => getStock(sym)?.sector === 'FMCG')
-    if (!hasFMCG) {
+    const hasStaples = Object.keys(holdings).some(
+      (sym) => getStock(sym)?.sector === 'Consumer Staples'
+    )
+    if (!hasStaples) {
       insights.push({
-        id: 'O2-missing-fmcg',
+        id: 'O2-missing-staples',
         category: 'opportunity',
         severity: 'info',
-        title: 'Consider adding defensive FMCG stocks',
-        body: 'FMCG stocks like HINDUNILVR, NESTLEIND, or ITC tend to be stable during downturns. They suit conservative investors seeking steady returns with lower volatility.',
-        actionLabel: 'Browse FMCG Stocks',
+        title: 'Consider adding defensive Consumer Staples stocks',
+        body: 'Consumer Staples stocks like KO, PG, or WMT tend to be stable during downturns. They suit conservative investors seeking steady returns with lower volatility.',
+        actionLabel: 'Browse Staples',
         actionHref: '/simulator',
       })
     }
@@ -195,7 +197,7 @@ export function generateInsights(input: DiagnosticsInput): Insight[] {
       category: 'opportunity',
       severity: 'info',
       title: 'Spread across more sectors for lower risk',
-      body: `You hold ${holdingList.length} stocks but only across ${numSectors} sector${numSectors === 1 ? '' : 's'}. Adding stocks from Healthcare, Infrastructure, or Consumer could meaningfully reduce your overall risk.`,
+      body: `You hold ${holdingList.length} stocks but only across ${numSectors} sector${numSectors === 1 ? '' : 's'}. Adding stocks from Healthcare, Industrials, or Consumer Staples could meaningfully reduce your overall risk.`,
       actionLabel: 'Diversify',
       actionHref: '/simulator',
     })

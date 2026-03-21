@@ -2,7 +2,7 @@
 
 import { useState, useRef, useEffect } from 'react'
 import { ChevronDown, Search } from 'lucide-react'
-import { getStocks } from '@/lib/data/stocks'
+import { useStocksStore } from '@/store/useStocksStore'
 import { formatCurrency } from '@/lib/utils/formatters'
 import { Badge } from '@/components/ui/Badge'
 import { cn } from '@/lib/utils/cn'
@@ -13,24 +13,20 @@ interface StockSelectorProps {
   onChange: (symbol: string) => void
 }
 
-// Map sector to a badge variant for visual differentiation
+// Map GICS sector to a badge variant for visual differentiation
 function sectorVariant(sector: Sector): 'info' | 'success' | 'warning' | 'default' | 'danger' {
   const map: Partial<Record<Sector, 'info' | 'success' | 'warning' | 'default' | 'danger'>> = {
-    Banking: 'info',
-    IT: 'info',
-    Energy: 'warning',
-    FMCG: 'success',
-    Finance: 'info',
-    Auto: 'default',
-    Pharma: 'success',
-    Consumer: 'default',
-    Telecom: 'warning',
-    Utilities: 'default',
-    Materials: 'warning',
-    Infrastructure: 'default',
-    Insurance: 'info',
-    Healthcare: 'success',
-    Mining: 'warning',
+    Technology:               'info',
+    'Communication Services': 'info',
+    'Financial Services':     'info',
+    Healthcare:               'success',
+    'Consumer Staples':       'success',
+    'Consumer Discretionary': 'default',
+    Industrials:              'default',
+    Energy:                   'warning',
+    Materials:                'warning',
+    'Real Estate':            'default',
+    Utilities:                'success',
   }
   return map[sector] ?? 'default'
 }
@@ -41,7 +37,8 @@ export function StockSelector({ value, onChange }: StockSelectorProps) {
   const containerRef = useRef<HTMLDivElement>(null)
   const searchRef = useRef<HTMLInputElement>(null)
 
-  const stocks = getStocks()
+  // Reactive — re-renders when prices load
+  const stocks = Object.values(useStocksStore((s) => s.stocks))
 
   const filtered = stocks.filter((s) => {
     const q = search.toLowerCase()

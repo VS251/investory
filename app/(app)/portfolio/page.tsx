@@ -100,7 +100,7 @@ export default function PortfolioPage() {
                   Portfolio Actions
                 </p>
                 <p className="mt-0.5 text-xs text-[var(--text-muted)]">
-                  Export your data or reset to start fresh with ₹1,00,000
+                  Export your data or reset to start fresh with $100,000
                 </p>
               </div>
               <div className="flex gap-2">
@@ -138,7 +138,7 @@ export default function PortfolioPage() {
         <div className="flex flex-col gap-4">
           <p className="text-sm text-[var(--text-secondary)]">
             This will clear all your holdings and trade history, and restore your balance to
-            ₹1,00,000. This cannot be undone.
+            $100,000. This cannot be undone.
           </p>
           <div className="flex gap-2">
             <Button

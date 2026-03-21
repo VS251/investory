@@ -1,6 +1,7 @@
 'use client'
 
 import { usePortfolioStore } from '@/store/usePortfolioStore'
+import { useStocksStore } from '@/store/useStocksStore'
 import { getHoldingPnL } from '@/lib/utils/calculations'
 import { getStock } from '@/lib/data/stocks'
 import { formatCurrency, formatPercent } from '@/lib/utils/formatters'
@@ -11,24 +12,25 @@ import type { Sector } from '@/types'
 
 function sectorVariant(sector: Sector): 'info' | 'success' | 'warning' | 'default' {
   const map: Partial<Record<Sector, 'info' | 'success' | 'warning' | 'default'>> = {
-    Banking: 'info',
-    IT: 'info',
-    Energy: 'warning',
-    FMCG: 'success',
-    Finance: 'info',
-    Pharma: 'success',
-    Telecom: 'warning',
-    Materials: 'warning',
-    Infrastructure: 'default',
-    Insurance: 'info',
-    Healthcare: 'success',
-    Mining: 'warning',
+    Technology:               'info',
+    'Communication Services': 'info',
+    'Financial Services':     'info',
+    Healthcare:               'success',
+    'Consumer Staples':       'success',
+    'Consumer Discretionary': 'default',
+    Industrials:              'default',
+    Energy:                   'warning',
+    Materials:                'warning',
+    'Real Estate':            'default',
+    Utilities:                'success',
   }
   return map[sector] ?? 'default'
 }
 
 export function HoldingsTable() {
   const { holdings } = usePortfolioStore()
+  // Subscribe so the table re-renders when real prices arrive
+  useStocksStore((s) => s.pricesLoaded)
   const holdingList = Object.values(holdings)
 
   if (holdingList.length === 0) {
@@ -64,7 +66,7 @@ export function HoldingsTable() {
               Value
             </th>
             <th className="pb-3 pr-4 text-right text-xs font-medium text-[var(--text-muted)]">
-              P&L (₹)
+              P&L ($)
             </th>
             <th className="pb-3 text-right text-xs font-medium text-[var(--text-muted)]">
               P&L (%)

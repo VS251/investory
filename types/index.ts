@@ -1,34 +1,65 @@
 // ─── Stocks ──────────────────────────────────────────────────────────────────
 
+// GICS Level-1 sectors
 export type Sector =
-  | 'Banking'
-  | 'IT'
-  | 'Energy'
-  | 'FMCG'
-  | 'Finance'
-  | 'Auto'
-  | 'Pharma'
-  | 'Consumer'
-  | 'Telecom'
-  | 'Utilities'
-  | 'Materials'
-  | 'Infrastructure'
-  | 'Insurance'
+  | 'Technology'
   | 'Healthcare'
-  | 'Mining';
+  | 'Financial Services'
+  | 'Consumer Discretionary'
+  | 'Consumer Staples'
+  | 'Industrials'
+  | 'Communication Services'
+  | 'Energy'
+  | 'Materials'
+  | 'Real Estate'
+  | 'Utilities';
 
 export interface PricePoint {
   date: string; // "YYYY-MM-DD"
   price: number;
 }
 
+// Static config — no price data
+export interface StockConfig {
+  symbol: string;
+  name: string;
+  sector: Sector;
+  marketCap: 'large' | 'mid' | 'small';
+  fallbackPrice: number;
+}
+
+// Hydrated at runtime with real prices + history
 export interface Stock {
   symbol: string;
   name: string;
   sector: Sector;
   marketCap: 'large' | 'mid' | 'small';
   currentPrice: number;
+  change: number;         // daily absolute change
+  changePercent: number;  // daily % change
+  previousClose: number;
   priceHistory: PricePoint[];
+}
+
+// API response type for historical data
+export interface HistoricalPrice {
+  date: string;    // "YYYY-MM-DD"
+  open: number;
+  high: number;
+  low: number;
+  close: number;
+  adjClose: number;
+  volume: number;
+}
+
+// Benchmark data
+export interface BenchmarkData {
+  symbol: string;
+  name: string;
+  currentPrice: number;
+  change: number;
+  changePercent: number;
+  history: HistoricalPrice[];
 }
 
 // ─── Portfolio ────────────────────────────────────────────────────────────────

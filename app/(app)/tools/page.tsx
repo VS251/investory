@@ -35,7 +35,7 @@ function SIPCalculator() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3 mb-6">
         <InputField
-          label="Monthly Amount (₹)"
+          label="Monthly Amount ($)"
           value={monthlyAmount}
           onChange={setMonthlyAmount}
           min={100}
@@ -108,7 +108,7 @@ function CompoundInterestCalculator() {
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 mb-5">
         <InputField
-          label="Principal Amount (₹)"
+          label="Principal Amount ($)"
           value={principal}
           onChange={setPrincipal}
           min={1000}

@@ -49,8 +49,8 @@ function HeroIllustration() {
           <div className="flex items-center justify-between mb-4">
             <div>
               <p className="text-xs text-[var(--text-muted)]">Portfolio Value</p>
-              <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">₹1,14,280</p>
-              <p className="text-sm font-medium text-gain">+₹14,280 (+14.28%)</p>
+              <p className="text-2xl font-bold text-[var(--text-primary)] tabular-nums">$114,280</p>
+              <p className="text-sm font-medium text-gain">+$14,280 (+14.28%)</p>
             </div>
             <div className="flex h-10 w-10 items-center justify-center rounded-full border-2 border-gain/30 bg-gain-light dark:bg-gain/10">
               <span className="text-sm font-bold text-gain">A</span>
@@ -76,7 +76,7 @@ function HeroIllustration() {
             />
           </svg>
           <div className="mt-3 flex gap-2">
-            {['RELIANCE', 'TCS', 'INFY'].map((sym) => (
+            {['AAPL', 'MSFT', 'NVDA'].map((sym) => (
               <span
                 key={sym}
                 className="rounded-md bg-[var(--bg-card-alt)] px-2 py-0.5 text-xs font-medium text-[var(--text-secondary)]"
@@ -154,7 +154,7 @@ export default function LandingPage() {
             </h1>
 
             <p className="mb-8 max-w-md text-lg leading-relaxed text-[var(--text-secondary)]">
-              Practice with ₹1,00,000 in virtual money and understand the{' '}
+              Practice with $100,000 in virtual money and understand the{' '}
               <strong className="text-[var(--text-primary)]">why</strong>{' '}
               behind every trade — no jargon, zero stakes.
             </p>

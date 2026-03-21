@@ -1,7 +1,7 @@
 'use client'
 
-import { useMemo } from 'react'
-import { getStock } from '@/lib/data/stocks'
+import { useStocksStore } from '@/store/useStocksStore'
+import { useStockHistory } from '@/hooks/useStockHistory'
 import { formatCurrency, formatPercent } from '@/lib/utils/formatters'
 import { Badge } from '@/components/ui/Badge'
 import { TrendingUp, TrendingDown } from 'lucide-react'
@@ -14,29 +14,28 @@ interface MarketPriceDisplayProps {
 
 function sectorVariant(sector: Sector): 'info' | 'success' | 'warning' | 'default' {
   const map: Partial<Record<Sector, 'info' | 'success' | 'warning' | 'default'>> = {
-    Banking: 'info',
-    IT: 'info',
-    Energy: 'warning',
-    FMCG: 'success',
-    Finance: 'info',
-    Pharma: 'success',
-    Telecom: 'warning',
-    Materials: 'warning',
-    Infrastructure: 'default',
-    Insurance: 'info',
-    Healthcare: 'success',
-    Mining: 'warning',
+    Technology:               'info',
+    'Communication Services': 'info',
+    'Financial Services':     'info',
+    Healthcare:               'success',
+    'Consumer Staples':       'success',
+    'Consumer Discretionary': 'default',
+    Industrials:              'default',
+    Energy:                   'warning',
+    Materials:                'warning',
+    'Real Estate':            'default',
+    Utilities:                'success',
   }
   return map[sector] ?? 'default'
 }
 
-interface ChangeStat {
+interface ChangeStatBoxProps {
   label: string
   change: number
   changePct: number
 }
 
-function ChangeStatBox({ label, change, changePct }: ChangeStat) {
+function ChangeStatBox({ label, change, changePct }: ChangeStatBoxProps) {
   const isPositive = change >= 0
   return (
     <div className="flex flex-col gap-0.5">
@@ -50,12 +49,7 @@ function ChangeStatBox({ label, change, changePct }: ChangeStat) {
         {isPositive ? <TrendingUp size={14} /> : <TrendingDown size={14} />}
         <span>{formatPercent(changePct)}</span>
       </div>
-      <span
-        className={cn(
-          'text-xs font-medium',
-          isPositive ? 'text-gain' : 'text-loss'
-        )}
-      >
+      <span className={cn('text-xs font-medium', isPositive ? 'text-gain' : 'text-loss')}>
         {isPositive ? '+' : ''}{formatCurrency(change)}
       </span>
     </div>
@@ -63,35 +57,15 @@ function ChangeStatBox({ label, change, changePct }: ChangeStat) {
 }
 
 export function MarketPriceDisplay({ symbol }: MarketPriceDisplayProps) {
-  const stats = useMemo(() => {
-    const stock = getStock(symbol)
-    if (!stock) return null
+  // Subscribe to live price updates from the store
+  const stock = useStocksStore((s) => s.stocks[symbol])
+  const pricesLoaded = useStocksStore((s) => s.pricesLoaded)
 
-    const history = stock.priceHistory
-    const currentPrice = stock.currentPrice
+  // Trigger lazy history load for 1W/1M change calculations
+  const { loaded: historyLoaded } = useStockHistory(symbol)
+  const priceHistory = useStocksStore((s) => s.stocks[symbol]?.priceHistory ?? [])
 
-    function getPriceNDaysAgo(n: number): number {
-      if (history.length <= n) return history[0]?.price ?? currentPrice
-      return history[history.length - 1 - n]?.price ?? currentPrice
-    }
-
-    const yesterday = getPriceNDaysAgo(1)
-    const sevenDaysAgo = getPriceNDaysAgo(7)
-    const thirtyDaysAgo = getPriceNDaysAgo(30)
-
-    return {
-      stock,
-      currentPrice,
-      oneDayChange: currentPrice - yesterday,
-      oneDayChangePct: yesterday > 0 ? ((currentPrice - yesterday) / yesterday) * 100 : 0,
-      oneWeekChange: currentPrice - sevenDaysAgo,
-      oneWeekChangePct: sevenDaysAgo > 0 ? ((currentPrice - sevenDaysAgo) / sevenDaysAgo) * 100 : 0,
-      oneMonthChange: currentPrice - thirtyDaysAgo,
-      oneMonthChangePct: thirtyDaysAgo > 0 ? ((currentPrice - thirtyDaysAgo) / thirtyDaysAgo) * 100 : 0,
-    }
-  }, [symbol])
-
-  if (!stats) {
+  if (!stock) {
     return (
       <div className="rounded-lg bg-[var(--bg-card-alt)] p-4 text-sm text-[var(--text-muted)]">
         Stock not found: {symbol}
@@ -99,11 +73,28 @@ export function MarketPriceDisplay({ symbol }: MarketPriceDisplayProps) {
     )
   }
 
-  const { stock, currentPrice, oneDayChange, oneDayChangePct, oneWeekChange, oneWeekChangePct, oneMonthChange, oneMonthChangePct } = stats
+  const { currentPrice, change, changePercent } = stock
+
+  // 1D change comes directly from the API quote (accurate market data)
+  const oneDayChange = pricesLoaded ? change : 0
+  const oneDayChangePct = pricesLoaded ? changePercent : 0
+
+  // 1W / 1M change derived from history (loaded lazily)
+  function getPriceNDaysAgo(n: number): number {
+    if (priceHistory.length <= n) return priceHistory[0]?.price ?? currentPrice
+    return priceHistory[priceHistory.length - 1 - n]?.price ?? currentPrice
+  }
+
+  const sevenDaysAgo = historyLoaded ? getPriceNDaysAgo(7) : currentPrice
+  const thirtyDaysAgo = historyLoaded ? getPriceNDaysAgo(30) : currentPrice
+
+  const oneWeekChange = currentPrice - sevenDaysAgo
+  const oneWeekChangePct = sevenDaysAgo > 0 ? ((currentPrice - sevenDaysAgo) / sevenDaysAgo) * 100 : 0
+  const oneMonthChange = currentPrice - thirtyDaysAgo
+  const oneMonthChangePct = thirtyDaysAgo > 0 ? ((currentPrice - thirtyDaysAgo) / thirtyDaysAgo) * 100 : 0
 
   return (
     <div>
-      {/* Stock name + sector */}
       <div className="mb-2 flex items-center gap-2">
         <span className="text-sm font-semibold text-[var(--text-primary)]">{stock.name}</span>
         <Badge variant={sectorVariant(stock.sector)} size="sm">
@@ -111,34 +102,36 @@ export function MarketPriceDisplay({ symbol }: MarketPriceDisplayProps) {
         </Badge>
       </div>
 
-      {/* Current price */}
       <div className="mb-3">
         <span className="text-3xl font-bold tracking-tight text-[var(--text-primary)]">
           {formatCurrency(currentPrice)}
         </span>
-        <span className="ml-2 text-xs text-[var(--text-muted)]">Current</span>
+        <span className="ml-2 text-xs text-[var(--text-muted)]">
+          {pricesLoaded ? 'Live' : 'Estimated'}
+        </span>
       </div>
 
-      {/* Change stats */}
       <div className="grid grid-cols-3 gap-3 rounded-lg border border-[var(--border)] bg-[var(--bg-card-alt)] p-3">
-        <ChangeStatBox
-          label="1D"
-          change={oneDayChange}
-          changePct={oneDayChangePct}
-        />
+        <ChangeStatBox label="1D" change={oneDayChange} changePct={oneDayChangePct} />
         <div className="border-l border-[var(--border)] pl-3">
-          <ChangeStatBox
-            label="1W"
-            change={oneWeekChange}
-            changePct={oneWeekChangePct}
-          />
+          {historyLoaded ? (
+            <ChangeStatBox label="1W" change={oneWeekChange} changePct={oneWeekChangePct} />
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-[var(--text-muted)]">1W</span>
+              <span className="text-xs text-[var(--text-muted)]">Loading…</span>
+            </div>
+          )}
         </div>
         <div className="border-l border-[var(--border)] pl-3">
-          <ChangeStatBox
-            label="1M"
-            change={oneMonthChange}
-            changePct={oneMonthChangePct}
-          />
+          {historyLoaded ? (
+            <ChangeStatBox label="1M" change={oneMonthChange} changePct={oneMonthChangePct} />
+          ) : (
+            <div className="flex flex-col gap-0.5">
+              <span className="text-xs text-[var(--text-muted)]">1M</span>
+              <span className="text-xs text-[var(--text-muted)]">Loading…</span>
+            </div>
+          )}
         </div>
       </div>
     </div>
