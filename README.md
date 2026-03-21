@@ -26,11 +26,11 @@
 
 Most investing apps tell you **what** to do. Investory tells you **why**.
 
-Investory is a free, self-contained platform for learning stock investing from scratch — or sharpening an existing strategy. It combines structured education, a realistic virtual trading simulator, and AI-powered explanations into one cohesive experience.
+Investory is a free platform for learning stock investing from scratch — or sharpening an existing strategy. It combines structured education, a realistic virtual trading simulator, and AI-powered explanations into one cohesive experience.
 
 No real money. No sign-up required. Just learn by doing.
 
-> Built for Indian retail investors with NSE Top 50 stocks, ₹ currency, and India-relevant examples — but the concepts apply everywhere.
+> Built around 50 US large-cap stocks (NYSE/NASDAQ) across all 11 GICS sectors, with live end-of-day prices from Yahoo Finance.
 
 ---
 
@@ -43,6 +43,8 @@ No real money. No sign-up required. Just learn by doing.
 - [Tech Stack](#tech-stack)
 - [Getting Started](#getting-started)
 - [Project Structure](#project-structure)
+- [How the Data Pipeline Works](#how-the-data-pipeline-works)
+- [How the "Explain My Action" Engine Works](#how-the-explain-my-action-engine-works)
 - [Contributing](#contributing)
 - [License](#license)
 
@@ -67,7 +69,7 @@ The internet has plenty of investing resources. What's missing is the bridge bet
 Structured courses, bite-sized lessons, instant quizzes, and a daily streak to keep you coming back.
 
 ### 💹 Virtual Trading Simulator
-Start with ₹1,00,000 in virtual money and trade NSE Top 50 stocks in a realistic environment. Every trade is tracked, charted, and explained.
+Start with $100,000 in virtual money and trade 50 US large-cap stocks with live end-of-day prices. Every trade is tracked, charted, and explained.
 
 ### 🧠 "Explain My Action" — AI-Powered Trade Insights
 After **every trade**, a plain-English explanation appears:
@@ -111,13 +113,13 @@ Most simulators drop you into a trading interface with zero context. Investory s
 |---|---|---|
 | Basics of Investing | Beginner | What is a stock? How prices move. P/E ratio. |
 | Risk & Diversification | Beginner | Risk types. Why diversification works. Sector vs geographic. |
-| Reading the Market | Intermediate | NSE/BSE. Bull/bear cycles. NIFTY 50 explained. |
-| Portfolio Strategy | Intermediate | Building your first portfolio. SIP. Rebalancing. |
+| Reading the Market | Intermediate | Stock exchanges. Bull/bear cycles. Index funds explained. |
+| Portfolio Strategy | Intermediate | Building your first portfolio. Dollar-cost averaging. Rebalancing. |
 | Advanced Concepts | Advanced | Valuation. Sector rotation. Macro indicators. |
 
 ### How it works
 
-**1. Read** — Each lesson is a focused 3–6 minute read with real Indian market examples.
+**1. Read** — Each lesson is a focused 3–6 minute read with real market examples.
 
 **2. Answer** — Every lesson ends with an instant-feedback quiz. Select an answer, get immediate confirmation and the explanation *why* — even if you got it right.
 
@@ -159,17 +161,18 @@ Most simulators drop you into a trading interface with zero context. Investory s
 
 | Layer | Technology | Why |
 |---|---|---|
-| Framework | [Next.js 14](https://nextjs.org) (App Router) | File-based routing, server/client split, great DX |
+| Framework | [Next.js 14](https://nextjs.org) (App Router) | File-based routing, server/client split, API routes |
 | Language | [TypeScript](https://typescriptlang.org) | Type-safe contracts between stores, engines, and UI |
 | Styling | [Tailwind CSS](https://tailwindcss.com) | Utility-first, consistent design tokens, dark mode |
 | State | [Zustand](https://zustand-demo.pmnd.rs) + `persist` | Minimal boilerplate, localStorage persistence built-in |
 | Charts | [Recharts](https://recharts.org) | Declarative React charts, smooth animations |
+| Market Data | [yahoo-finance2](https://github.com/gadicc/yahoo-finance2) | EOD quotes + 1-year price history, server-side only |
 | Icons | [Lucide React](https://lucide.dev) | Clean, consistent icon set |
 | Theme | [next-themes](https://github.com/pacocoursey/next-themes) | Zero-flicker dark/light mode |
 
-**No backend. No database. No API keys required.**
+**No database. No user authentication. No API keys required.**
 
-All data lives in the browser via Zustand + `localStorage`. Stock price history is deterministic (seeded, not random) — so charts look realistic and consistent across sessions.
+Market data is fetched server-side via Next.js API routes and cached in memory. Portfolio state is persisted to `localStorage` via Zustand.
 
 ---
 
@@ -196,7 +199,7 @@ npm run dev
 
 Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-That's it. No `.env` file. No database setup. No API keys.
+The app immediately seeds 50 US stocks from static fallback prices so it never renders empty. Live prices load within a couple of seconds as the API route fetches from Yahoo Finance in the background.
 
 ### Build for production
 
@@ -218,39 +221,91 @@ npx vercel --prod
 ```
 investory/
 ├── app/
-│   ├── (app)/               # Authenticated app pages (requires onboarding)
-│   │   ├── dashboard/       # Main hub
-│   │   ├── learn/[slug]/    # Course lessons
-│   │   ├── simulator/       # Virtual trading
-│   │   ├── portfolio/       # Holdings + health score
-│   │   ├── insights/        # Diagnostic insights
-│   │   └── tools/           # Calculators
-│   ├── onboarding/          # 3-step goal + risk quiz
-│   └── page.tsx             # Landing page
+│   ├── api/
+│   │   ├── stocks/              # GET /api/stocks — live quotes for all 50
+│   │   │   └── [symbol]/
+│   │   │       └── history/     # GET /api/stocks/:symbol/history — 1yr OHLC
+│   │   └── benchmarks/          # GET /api/benchmarks — SPY, QQQ, IWM, VTI
+│   ├── (app)/                   # App pages (requires onboarding)
+│   │   ├── dashboard/
+│   │   ├── learn/[slug]/
+│   │   ├── simulator/
+│   │   ├── portfolio/
+│   │   ├── insights/
+│   │   └── tools/
+│   ├── onboarding/
+│   └── page.tsx                 # Landing page
 │
 ├── components/
-│   ├── ui/                  # Base design system (Button, Card, Badge…)
-│   ├── layout/              # Navbar, Sidebar, BottomNav
-│   ├── simulator/           # OrderPanel, ExplainMyActionModal…
-│   ├── portfolio/           # HealthScoreCard, HoldingsTable…
-│   ├── learn/               # CourseCard, QuizBlock, LessonContent…
-│   └── insights/            # InsightCard, diagnostic sections
+│   ├── providers/
+│   │   └── StockDataProvider.tsx  # Hydrates Zustand store on mount
+│   ├── ui/                        # Base design system (Button, Card, Badge…)
+│   ├── layout/                    # Navbar, Sidebar, BottomNav
+│   ├── simulator/                 # OrderPanel, ExplainMyActionModal…
+│   ├── portfolio/                 # HealthScoreCard, HoldingsTable…
+│   ├── learn/                     # CourseCard, QuizBlock, LessonContent…
+│   └── insights/                  # InsightCard, diagnostic sections
+│
+├── hooks/
+│   └── useStockHistory.ts         # Lazy-loads per-symbol EOD history on demand
 │
 ├── lib/
 │   ├── ai/
-│   │   ├── explainAction.ts # "Explain My Action" rule engine
-│   │   ├── healthScore.ts   # Portfolio Health Score algorithm
-│   │   └── diagnostics.ts   # 4-category insights rules
+│   │   ├── explainAction.ts       # "Explain My Action" rule engine
+│   │   ├── healthScore.ts         # Portfolio Health Score algorithm
+│   │   └── diagnostics.ts         # 4-category insights rules
+│   ├── cache/
+│   │   └── prices.ts              # Server-side in-memory cache (TTL)
 │   ├── data/
-│   │   ├── stocks.ts        # NSE Top 50 + 365-day price history
-│   │   └── courses.ts       # 5 courses, 22 lessons, all quiz content
-│   └── utils/               # Formatters, calculations, cn()
+│   │   ├── stocks.ts              # Delegates to useStocksStore.getState()
+│   │   └── courses.ts             # 5 courses, 22 lessons, all quiz content
+│   ├── providers/
+│   │   └── yahoo-finance.ts       # Yahoo Finance abstraction (swap without touching routes)
+│   └── utils/                     # Formatters, calculations, cn()
 │
 └── store/
-    ├── useUserStore.ts       # Onboarding profile, risk tolerance
-    ├── usePortfolioStore.ts  # Holdings, trades, health score delta
-    └── useProgressStore.ts  # Lesson completion, quiz scores, streak
+    ├── useStocksStore.ts          # Stock registry + US_STOCKS_CONFIG (50 symbols)
+    ├── useUserStore.ts            # Onboarding profile, risk tolerance
+    ├── usePortfolioStore.ts       # Holdings, trades, health score delta
+    └── useProgressStore.ts        # Lesson completion, quiz scores, streak
 ```
+
+---
+
+## How the Data Pipeline Works
+
+```
+Browser                        Next.js Server              Yahoo Finance
+  |                                  |                           |
+  |  mount StockDataProvider         |                           |
+  |─────────────────────────────────>│                           |
+  |                           GET /api/stocks                    |
+  |                                  │──────────────────────────>│
+  |                                  │   50 quotes (EOD)         │
+  |                                  │<──────────────────────────│
+  |     { data: [...50 stocks] }     │  cache 5 min              │
+  |<─────────────────────────────────│                           |
+  |  useStocksStore.setStocks(...)   |                           |
+  |                                  |                           |
+  |  (user views a stock chart)      |                           |
+  |  useStockHistory('AAPL')         |                           |
+  |─────────────────────────────────>│                           |
+  |                     GET /api/stocks/AAPL/history             |
+  |                                  │──────────────────────────>│
+  |                                  │   252 days OHLC           │
+  |                                  │<──────────────────────────│
+  |   { data: [...252 points] }      │  cache 24 h               │
+  |<─────────────────────────────────│                           |
+  |  useStocksStore.setHistory(...)  |                           |
+```
+
+**Key design decisions:**
+
+- **Never empty** — `useStocksStore` seeds itself from `US_STOCKS_CONFIG` fallback prices at module init. The UI is always renderable.
+- **Provider abstraction** — all Yahoo Finance calls go through `lib/providers/yahoo-finance.ts`. Swapping to Polygon.io or another provider is a 1-file change.
+- **Lazy history** — price history is only fetched when a symbol is actually viewed, not upfront for all 50 stocks.
+- **In-memory server cache** — quotes: 5 min TTL, history: 24 h TTL. Prevents hammering Yahoo Finance across concurrent requests.
+- **Stale-on-error** — if Yahoo Finance fails, the cache serves stale data; if the cache is also cold, fallback prices are returned. The app never breaks.
 
 ---
 
@@ -297,13 +352,12 @@ git checkout -b feat/your-feature-name
 
 ### Ideas for contribution
 
-- [ ] Add more NSE stocks (Mid-cap, Small-cap)
-- [ ] Add more courses (Mutual Funds, ETFs, Options basics)
-- [ ] Connect a real market data API (Alpha Vantage, Yahoo Finance)
-- [ ] Add portfolio comparison (your portfolio vs NIFTY 50)
+- [ ] Add more US stocks (mid-cap, small-cap, international ADRs)
+- [ ] Add more courses (Mutual Funds / ETFs, Options basics, Bonds)
+- [ ] Benchmark comparison — portfolio vs SPY / QQQ
 - [ ] Mobile app (React Native / Expo)
 - [ ] Leaderboard for virtual trading
-- [ ] More languages (Hindi, Tamil, Telugu)
+- [ ] User accounts + cloud sync
 
 ### Guidelines
 
@@ -316,14 +370,15 @@ git checkout -b feat/your-feature-name
 
 ## Roadmap
 
-- [x] Virtual trading simulator with ₹1,00,000 starting balance
+- [x] Virtual trading simulator with $100,000 starting balance
 - [x] "Explain My Action" post-trade insights
 - [x] Portfolio Health Score (0–100)
 - [x] 5 courses / 22 lessons with instant quiz feedback
 - [x] Diagnostic insights (Risk / Mistakes / Opportunities / Good Decisions)
 - [x] Daily streak tracking
 - [x] Dark / light mode
-- [ ] Real market data API integration
+- [x] Real market data — 50 US stocks via Yahoo Finance (EOD quotes + 1-year history)
+- [ ] Benchmark comparison (portfolio vs SPY)
 - [ ] User accounts + cloud sync
 - [ ] Mobile app
 - [ ] Leaderboard
